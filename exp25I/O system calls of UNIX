@@ -1,0 +1,97 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
+
+void demonstrateFcntl(int fileDescriptor);
+void demonstrateSeek(int fileDescriptor);
+void demonstrateStat(const char *filename);
+void demonstrateDirOperations(const char *dirname);
+
+int main() {
+    int fileDescriptor;
+    const char *filename = "example.txt";
+    const char *dirname = ".";
+
+    // Open a file
+    fileDescriptor = open(filename, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    if (fileDescriptor == -1) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+
+    // Demonstrate fcntl
+    demonstrateFcntl(fileDescriptor);
+
+    // Demonstrate seek
+    demonstrateSeek(fileDescriptor);
+
+    // Close the file
+    close(fileDescriptor);
+
+    // Demonstrate stat
+    demonstrateStat(filename);
+
+    // Demonstrate opendir and readdir
+    demonstrateDirOperations(dirname);
+
+    return 0;
+}
+
+void demonstrateFcntl(int fileDescriptor) {
+    // Set file descriptor to non-blocking mode
+    int flags = fcntl(fileDescriptor, F_GETFL);
+    flags |= O_NONBLOCK;
+    fcntl(fileDescriptor, F_SETFL, flags);
+    printf("File descriptor set to non-blocking mode.\n");
+}
+
+void demonstrateSeek(int fileDescriptor) {
+    // Seek to the beginning of the file
+    lseek(fileDescriptor, 0, SEEK_SET);
+
+    // Write data to the file
+    write(fileDescriptor, "Hello, UNIX I/O System Calls!", 28);
+    printf("Data written to the file.\n");
+
+    // Seek to the end of the file
+    lseek(fileDescriptor, 0, SEEK_END);
+}
+
+void demonstrateStat(const char *filename) {
+    struct stat fileStat;
+
+    // Obtain file information using stat
+    if (stat(filename, &fileStat) == -1) {
+        perror("Error obtaining file information");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("\nFile Information:\n");
+    printf("Size: %ld bytes\n", fileStat.st_size);
+    printf("Mode: %o\n", fileStat.st_mode);
+    printf("Last Access Time: %s", ctime(&fileStat.st_atime));
+}
+
+void demonstrateDirOperations(const char *dirname) {
+    DIR *dir;
+    struct dirent *entry;
+
+    // Open a directory
+    dir = opendir(dirname);
+    if (dir == NULL) {
+        perror("Error opening directory");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("\nDirectory Contents:\n");
+    while ((entry = readdir(dir)) != NULL) {
+        printf("%s\n", entry->d_name);
+    }
+
+    // Close the directory
+    closedir(dir);
+}
