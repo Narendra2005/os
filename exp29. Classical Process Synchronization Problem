@@ -1,0 +1,89 @@
+#include <stdio.h>
+#include <pthread.h>
+#include <stdlib.h>
+
+#define BUFFER_SIZE 5
+
+// Shared data
+int buffer[BUFFER_SIZE];
+int itemCount = 0;
+
+// Mutex lock
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+// Condition variables
+pthread_cond_t notFull = PTHREAD_COND_INITIALIZER;
+pthread_cond_t notEmpty = PTHREAD_COND_INITIALIZER;
+
+// Function prototypes
+void *producer(void *arg);
+void *consumer(void *arg);
+
+int main() {
+    // Create producer and consumer threads
+    pthread_t producerThread, consumerThread;
+    pthread_create(&producerThread, NULL, producer, NULL);
+    pthread_create(&consumerThread, NULL, consumer, NULL);
+
+    // Join threads
+    pthread_join(producerThread, NULL);
+    pthread_join(consumerThread, NULL);
+
+    // Cleanup
+    pthread_mutex_destroy(&mutex);
+    pthread_cond_destroy(&notFull);
+    pthread_cond_destroy(&notEmpty);
+
+    return 0;
+}
+
+void *producer(void *arg) {
+    for (int i = 0; i < 10; i++) {
+        // Simulate producing an item
+        int newItem = rand() % 100;
+
+        // Acquire the lock
+        pthread_mutex_lock(&mutex);
+
+        // Wait if the buffer is full
+        while (itemCount == BUFFER_SIZE) {
+            pthread_cond_wait(&notFull, &mutex);
+        }
+
+        // Produce item and add it to the buffer
+        buffer[itemCount++] = newItem;
+        printf("Produced: %d\n", newItem);
+
+        // Signal that the buffer is not empty
+        pthread_cond_signal(&notEmpty);
+
+        // Release the lock
+        pthread_mutex_unlock(&mutex);
+    }
+
+    pthread_exit(NULL);
+}
+
+void *consumer(void *arg) {
+    for (int i = 0; i < 10; i++) {
+        // Acquire the lock
+        pthread_mutex_lock(&mutex);
+
+        // Wait if the buffer is empty
+        while (itemCount == 0) {
+            pthread_cond_wait(&notEmpty, &mutex);
+        }
+
+        // Consume item from the buffer
+        int consumedItem = buffer[--itemCount];
+        printf("Consumed: %d\n", consumedItem);
+
+        // Signal that the buffer is not full
+        pthread_cond_signal(&notFull);
+
+        // Release the lock
+        pthread_mutex_unlock(&mutex);
+    }
+
+    pthread_exit(NULL);
+}
