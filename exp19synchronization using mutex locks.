@@ -1,0 +1,51 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+
+#define MAX_COUNT 100000
+int shared_variable = 0;
+pthread_mutex_t mutex;
+
+void *increment(void *arg) {
+    for (int i = 0; i < MAX_COUNT; i++) {
+        pthread_mutex_lock(&mutex);
+
+        // Critical Section: Increment the shared variable
+        shared_variable++;
+
+        pthread_mutex_unlock(&mutex);
+    }
+
+    pthread_exit(NULL);
+}
+
+int main() {
+    pthread_t thread1, thread2;
+
+    // Initialize mutex
+    if (pthread_mutex_init(&mutex, NULL) != 0) {
+        fprintf(stderr, "Mutex initialization failed\n");
+        return 1;
+    }
+
+    // Create threads
+    if (pthread_create(&thread1, NULL, increment, NULL) != 0 ||
+        pthread_create(&thread2, NULL, increment, NULL) != 0) {
+        fprintf(stderr, "Thread creation failed\n");
+        return 1;
+    }
+
+    // Join threads
+    if (pthread_join(thread1, NULL) != 0 || pthread_join(thread2, NULL) != 0) {
+        fprintf(stderr, "Thread join failed\n");
+        return 1;
+    }
+
+    // Destroy mutex
+    pthread_mutex_destroy(&mutex);
+
+    // Display the final value of the shared variable
+    printf("Final value of the shared variable: %d\n", shared_variable);
+
+    return 0;
+}
