@@ -1,0 +1,26 @@
+#include <stdio.h>
+#include <pthread.h>
+
+void *printNumbers(void *arg) {
+    int start = *((int *)arg);
+    for (int i = start; i < start + 5; i++) {
+        printf("%d ", i);
+    }
+    printf("\n");
+    pthread_exit(NULL);
+}
+
+int main() {
+    pthread_t thread1, thread2;
+    int start1 = 1, start2 = 6;
+
+    // Create two threads
+    pthread_create(&thread1, NULL, printNumbers, (void *)&start1);
+    pthread_create(&thread2, NULL, printNumbers, (void *)&start2);
+
+    // Wait for both threads to finish
+    pthread_join(thread1, NULL);
+    pthread_join(thread2, NULL);
+
+    return 0;
+}
