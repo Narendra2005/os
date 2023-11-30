@@ -1,0 +1,38 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    FILE *file;
+    char data[100];
+
+    // Create a file
+    file = fopen("example.txt", "w");
+    if (file == NULL) {
+        perror("Error creating file");
+        exit(EXIT_FAILURE);
+    }
+    printf("File created successfully.\n");
+
+    // Write data to the file
+    fprintf(file, "Hello, File Management Operations!\n");
+    printf("Data written to the file.\n");
+
+    // Close the file
+    fclose(file);
+
+    // Open the file for reading
+    file = fopen("example.txt", "r");
+    if (file == NULL) {
+        perror("Error opening file for reading");
+        exit(EXIT_FAILURE);
+    }
+
+    // Read data from the file
+    fscanf(file, "%[^\n]", data);
+    printf("Read from the file: %s\n", data);
+
+    // Close the file
+    fclose(file);
+
+    return 0;
+}
