@@ -1,0 +1,39 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_PAGES 3
+#define MAX_REFERENCES 10
+
+// Function prototypes
+void initializePageFrames(int pageFrames[], int size);
+int isPageFault(int pageFrames[], int size, int page);
+void updateAccessTime(int pageFrames[], int counters[], int size, int page);
+int getLeastRecentlyUsedPage(int counters[], int size);
+void displayPageFrames(int pageFrames[], int size);
+
+int main() {
+    int pageReferences[MAX_REFERENCES] = {1, 2, 3, 4, 2, 1, 5, 6, 2, 4};
+    int pageFrames[MAX_PAGES];
+    int counters[MAX_PAGES] = {0};
+    int pageFaultCount = 0;
+
+    // Initialize page frames
+    initializePageFrames(pageFrames, MAX_PAGES);
+
+    // Simulate page references
+    for (int i = 0; i < MAX_REFERENCES; i++) {
+        int currentPage = pageReferences[i];
+
+        if (isPageFault(pageFrames, MAX_PAGES, currentPage)) {
+            pageFaultCount++;
+            updateAccessTime(pageFrames, counters, MAX_PAGES, currentPage);
+            printf("Page Fault #%d: ", pageFaultCount);
+        } else {
+            updateAccessTime(pageFrames, counters, MAX_PAGES, currentPage);
+            printf("Page Hit: ");
+        }
+
+        displayPageFrames(pageFrames, MAX_PAGES);
+    }
+
+    printf("Total Page Faults: %d\n", pageFaultCount
