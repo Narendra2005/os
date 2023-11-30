@@ -1,0 +1,116 @@
+#include <stdio.h>
+
+#define MEMORY_SIZE 100
+
+// Structure to represent a memory block
+struct MemoryBlock {
+    int id;
+    int size;
+    int allocated;
+};
+
+// Function prototypes
+void initializeMemory(struct MemoryBlock memory[], int size);
+void displayMemory(struct MemoryBlock memory[], int size);
+int firstFit(struct MemoryBlock memory[], int size, int processSize);
+void deallocateMemory(struct MemoryBlock memory[], int size, int blockId);
+
+int main() {
+    struct MemoryBlock memory[MEMORY_SIZE];
+    int processSize, choice, blockId;
+
+    // Initialize memory blocks
+    initializeMemory(memory, MEMORY_SIZE);
+
+    do {
+        // Display menu
+        printf("\nMemory Management Menu:\n");
+        printf("1. Allocate Memory\n");
+        printf("2. Deallocate Memory\n");
+        printf("3. Display Memory\n");
+        printf("0. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                // Allocate memory
+                printf("Enter the size of the process: ");
+                scanf("%d", &processSize);
+                int allocatedBlockId = firstFit(memory, MEMORY_SIZE, processSize);
+                if (allocatedBlockId != -1) {
+                    printf("Memory allocated successfully. Allocated block ID: %d\n", allocatedBlockId);
+                } else {
+                    printf("Memory allocation failed. No suitable block found.\n");
+                }
+                break;
+
+            case 2:
+                // Deallocate memory
+                printf("Enter the block ID to deallocate: ");
+                scanf("%d", &blockId);
+                deallocateMemory(memory, MEMORY_SIZE, blockId);
+                break;
+
+            case 3:
+                // Display memory status
+                displayMemory(memory, MEMORY_SIZE);
+                break;
+
+            case 0:
+                // Exit the program
+                printf("Exiting...\n");
+                break;
+
+            default:
+                printf("Invalid choice. Please enter a valid option.\n");
+        }
+    } while (choice != 0);
+
+    return 0;
+}
+
+// Initialize memory blocks
+void initializeMemory(struct MemoryBlock memory[], int size) {
+    for (int i = 0; i < size; i++) {
+        memory[i].id = i + 1;
+        memory[i].size = 0;
+        memory[i].allocated = 0;
+    }
+}
+
+// Display memory status
+void displayMemory(struct MemoryBlock memory[], int size) {
+    printf("\nMemory Status:\n");
+    printf("Block ID\tSize\tAllocated\n");
+    for (int i = 0; i < size; i++) {
+        printf("%d\t\t%d\t\t%s\n", memory[i].id, memory[i].size,
+               memory[i].allocated ? "Yes" : "No");
+    }
+}
+
+// First Fit memory allocation algorithm
+int firstFit(struct MemoryBlock memory[], int size, int processSize) {
+    for (int i = 0; i < size; i++) {
+        if (!memory[i].allocated && memory[i].size >= processSize) {
+            // Allocate memory
+            memory[i].size = processSize;
+            memory[i].allocated = 1;
+            return memory[i].id;
+        }
+    }
+    return -1; // No suitable block found
+}
+
+// Deallocate memory block
+void deallocateMemory(struct MemoryBlock memory[], int size, int blockId) {
+    for (int i = 0; i < size; i++) {
+        if (memory[i].id == blockId) {
+            memory[i].size = 0;
+            memory[i].allocated = 0;
+            printf("Memory block with ID %d deallocated successfully.\n", blockId);
+            return;
+        }
+    }
+    printf("Memory block with ID %d not found.\n", blockId);
+}
